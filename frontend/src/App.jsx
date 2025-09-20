@@ -81,7 +81,7 @@ function App() {
 
   return (
     <ToastProvider>
-      <Router>
+    <Router>
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-800 text-white px-8 py-6 flex justify-between items-center shadow-lg">
         <div className="flex gap-8">
@@ -207,7 +207,7 @@ function App() {
           <Route path="/search" element={<Search />} />
         </Routes>
       </div>
-      </Router>
+    </Router>
     </ToastProvider>
   );
 }
