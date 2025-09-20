@@ -21,9 +21,6 @@ node_modules/
 .pnp
 .pnp.js
 
-# Production build
-dist/
-build/
 
 # Development
 .vite/
@@ -93,7 +90,6 @@ jspm_packages/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/

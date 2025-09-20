@@ -118,7 +118,6 @@ coverage/
 
 # Build outputs (if any)
 build/
-dist/
 out/
 
 # TypeScript
