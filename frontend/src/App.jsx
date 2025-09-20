@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 import { io } from "socket.io-client";
 import "./styles/animations.css";
 import Register from "./pages/Register";
@@ -30,7 +31,8 @@ function App() {
   // Initialize Socket.IO connection
   useEffect(() => {
     if (token && user) {
-      const newSocket = io('http://localhost:5000');
+      const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+      const newSocket = io(socketUrl);
       setSocket(newSocket);
 
       // Join user-specific room for notifications
@@ -63,8 +65,9 @@ function App() {
 
   const fetchUnreadCount = async () => {
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
       const res = await fetch(
-        "http://localhost:5000/api/notifications/unread-count",
+        `${apiUrl}/notifications/unread-count`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -77,7 +80,8 @@ function App() {
   };
 
   return (
-    <Router>
+    <ToastProvider>
+      <Router>
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-800 text-white px-8 py-6 flex justify-between items-center shadow-lg">
         <div className="flex gap-8">
@@ -203,7 +207,8 @@ function App() {
           <Route path="/search" element={<Search />} />
         </Routes>
       </div>
-    </Router>
+      </Router>
+    </ToastProvider>
   );
 }
 

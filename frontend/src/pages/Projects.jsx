@@ -1,12 +1,14 @@
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { fetchProjects, createProject } from "../utils/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import SkeletonLoader from "../components/SkeletonLoader";
 
 export default function Projects() {
     const { user, token } = useContext(AuthContext);
+    const { showSuccess, showError } = useToast();
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,15 +43,16 @@ export default function Projects() {
         try {
             const data = await createProject(token, newProject);
             if (data._id) {
+                showSuccess("Project created successfully!");
                 setProjects([...projects, data]);
                 setNewProject({ title: "", description: "", deadline: "" });
                 setIsModalOpen(false); // Close modal after successful creation
             } else {
-                alert(data.message || "Error creating project");
+                showError(data.message || "Error creating project");
             }
         } catch (error) {
             console.error('Error creating project:', error);
-            alert("Error creating project");
+            showError("Error creating project");
         }
     };
 
@@ -75,7 +78,8 @@ export default function Projects() {
     const handleEdit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch(`http://localhost:5000/api/projects/${editingProject._id}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${apiUrl}/projects/${editingProject._id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,14 +90,15 @@ export default function Projects() {
             
             if (response.ok) {
                 const updatedProject = await response.json();
+                showSuccess('Project updated successfully!');
                 setProjects(projects.map(p => p._id === updatedProject._id ? updatedProject : p));
                 closeEditModal();
             } else {
-                alert('Error updating project');
+                showError('Error updating project');
             }
         } catch (error) {
             console.error('Error updating project:', error);
-            alert('Error updating project');
+            showError('Error updating project');
         }
     };
 
@@ -103,7 +108,8 @@ export default function Projects() {
         }
         
         try {
-            const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${apiUrl}/projects/${projectId}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -111,13 +117,14 @@ export default function Projects() {
             });
             
             if (response.ok) {
+                showSuccess('Project deleted successfully!');
                 setProjects(projects.filter(p => p._id !== projectId));
             } else {
-                alert('Error deleting project');
+                showError('Error deleting project');
             }
         } catch (error) {
             console.error('Error deleting project:', error);
-            alert('Error deleting project');
+            showError('Error deleting project');
         }
     };
 

@@ -1,10 +1,12 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { registerUser } from "../utils/api";
 
 export default function Register() {
   const { setToken, setUser } = useContext(AuthContext);
+  const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
 
@@ -15,12 +17,13 @@ export default function Register() {
     e.preventDefault();
     const data = await registerUser(form.name, form.email, form.password);
     if (data.token) {
+      showSuccess("Registration successful! Welcome to the platform.");
       setToken(data.token);
       setUser(data.user);
       // Redirect to dashboard after successful registration
       navigate('/dashboard');
     } else {
-      alert(data.message || "Error registering");
+      showError(data.message || "Error registering");
     }
   };
 

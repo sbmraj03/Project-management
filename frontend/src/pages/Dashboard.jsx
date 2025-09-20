@@ -15,7 +15,8 @@ export default function Dashboard() {
         async function loadDashboardData() {
             try {
                 // Load dashboard data (tasks, status counts)
-                const response = await fetch('http://localhost:5000/api/projects/dashboard', {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                const response = await fetch(`${apiUrl}/projects/dashboard`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 

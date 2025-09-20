@@ -1,10 +1,12 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { loginUser } from "../utils/api";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { setToken, setUser } = useContext(AuthContext);
+  const { showSuccess, showError } = useToast();
   const [form, setForm] = useState({ email: "", password: "" });
   const navigate = useNavigate();
   
@@ -15,12 +17,12 @@ export default function Login() {
     e.preventDefault();
     const data = await loginUser(form.email, form.password);
     if (data.token) {
-      alert("Login successful");
+      showSuccess("Login successful");
       setToken(data.token);
       setUser(data.user);
       navigate("/dashboard");
     } else {
-      alert(data.message || "Login failed");
+      showError(data.message || "Login failed");
     }
   };
 

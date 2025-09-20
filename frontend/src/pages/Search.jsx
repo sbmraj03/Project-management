@@ -36,7 +36,8 @@ export default function Search() {
       params.append('sortBy', sortBy);
       params.append('sortOrder', sortOrder);
       
-      const url = `http://localhost:5000/api/tasks/search?${params}`;
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const url = `${apiUrl}/tasks/search?${params}`;
       console.log('Search URL:', url);
       console.log('Search params:', params.toString());
       

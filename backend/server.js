@@ -39,7 +39,7 @@ const server = createServer(app);
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: "*", // later restrict to frontend URL
+    origin: process.env.FRONTEND_URL || "*", // Use environment variable for CORS
   },
 });
 

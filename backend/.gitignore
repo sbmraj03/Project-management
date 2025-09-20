@@ -1,4 +1,4 @@
-# Frontend .gitignore
+# Backend .gitignore
 
 # Environment variables
 .env
@@ -21,36 +21,11 @@ node_modules/
 .pnp
 .pnp.js
 
-# Production build
-dist/
-build/
-
-# Development
-.vite/
-.vite-cache/
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Editor directories and files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
 # Coverage directory used by tools like istanbul
 coverage/
@@ -59,9 +34,14 @@ coverage/
 # nyc test coverage
 .nyc_output
 
-# Dependency directories
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node_modules
 node_modules/
-jspm_packages/
 
 # Optional npm cache directory
 .npm
@@ -88,38 +68,62 @@ jspm_packages/
 .cache
 .parcel-cache
 
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
-dist
-
-# Gatsby files
-.cache/
-public
-
-# Storybook build outputs
-.out
-.storybook-out
-
 # Temporary folders
 tmp/
 temp/
 
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads directory (if you have file uploads)
+uploads/
+public/uploads/
+
+# Session store
+sessions/
+
 # Local development
 .local/
 
-# Vite
-.vite/
+# PM2 process file
+ecosystem.config.js
+
+# Docker
+.dockerignore
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# Test coverage
+coverage/
+
+# Build outputs (if any)
+build/
+dist/
+out/
 
 # TypeScript
 *.tsbuildinfo
 
 # Optional stylelint cache
 .stylelintcache
-
-# SvelteKit build / generate output
-.svelte-kit
-
-# End of https://www.gitignore.io/api/node

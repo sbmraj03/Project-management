@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { io } from "socket.io-client";
 import LoadingSpinner from "../components/LoadingSpinner";
 import SkeletonLoader from "../components/SkeletonLoader";
@@ -8,6 +9,7 @@ import SkeletonLoader from "../components/SkeletonLoader";
 export default function ProjectDetail() {
     const { id } = useParams();
     const { token, user, setUser } = useContext(AuthContext);
+    const { showSuccess, showError } = useToast();
     const [tasks, setTasks] = useState([]);
     const [project, setProject] = useState(null);
     const [projectMembers, setProjectMembers] = useState([]);
@@ -45,7 +47,8 @@ export default function ProjectDetail() {
     const fetchCurrentUser = async () => {
         if (token && !user) {
             try {
-                const res = await fetch('http://localhost:5000/api/auth/me', {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                const res = await fetch(`${apiUrl}/auth/me`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 const data = await res.json();
@@ -61,7 +64,8 @@ export default function ProjectDetail() {
 
     const fetchProject = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/projects/${id}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const res = await fetch(`${apiUrl}/projects/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
@@ -82,7 +86,8 @@ export default function ProjectDetail() {
         if (id) {
             // Create socket connection only once
             if (!socketRef.current) {
-                socketRef.current = io("http://localhost:5000");
+                const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+                socketRef.current = io(socketUrl);
             }
 
             const socket = socketRef.current;
@@ -120,7 +125,8 @@ export default function ProjectDetail() {
 
     const fetchTasks = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/tasks/${id}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const res = await fetch(`${apiUrl}/tasks/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
@@ -149,7 +155,8 @@ export default function ProjectDetail() {
                 taskData.assignee = newTask.assignee;
             }
             
-            const response = await fetch('http://localhost:5000/api/tasks', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${apiUrl}/tasks`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -159,7 +166,7 @@ export default function ProjectDetail() {
             });
             
             if (response.ok) {
-                console.log('Task created successfully');
+                showSuccess('Task created successfully!');
                 setNewTask({
                     title: "",
                     description: "",
@@ -174,11 +181,11 @@ export default function ProjectDetail() {
             } else {
                 const errorData = await response.json();
                 console.error('Error creating task:', errorData);
-                alert('Error creating task: ' + (errorData.message || 'Unknown error'));
+                showError('Error creating task: ' + (errorData.message || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error creating task:', error);
-            alert('Error creating task: ' + error.message);
+            showError('Error creating task: ' + error.message);
         }
     };
 
@@ -210,7 +217,8 @@ export default function ProjectDetail() {
     const sendInvite = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:5000/api/projects/invite', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${apiUrl}/projects/invite`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -223,16 +231,16 @@ export default function ProjectDetail() {
             });
             
             if (response.ok) {
-                alert('Invitation sent successfully!');
+                showSuccess('Invitation sent successfully!');
                 setInviteEmail("");
                 setIsInviteModalOpen(false);
             } else {
                 const errorData = await response.json();
-                alert('Error sending invitation: ' + (errorData.message || 'Unknown error'));
+                showError('Error sending invitation: ' + (errorData.message || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error sending invitation:', error);
-            alert('Error sending invitation: ' + error.message);
+            showError('Error sending invitation: ' + error.message);
         }
     };
 
@@ -247,7 +255,8 @@ export default function ProjectDetail() {
 
     const updateTask = async (taskId, updates) => {
         try {
-            await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            await fetch(`${apiUrl}/tasks/${taskId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -263,7 +272,8 @@ export default function ProjectDetail() {
 
     const deleteTask = async (taskId) => {
         try {
-            await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            await fetch(`${apiUrl}/tasks/${taskId}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -277,7 +287,8 @@ export default function ProjectDetail() {
 
     const addComment = async (taskId, text) => {
         try {
-            await fetch(`http://localhost:5000/api/tasks/${taskId}/comment`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            await fetch(`${apiUrl}/tasks/${taskId}/comment`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

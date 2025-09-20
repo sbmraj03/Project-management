@@ -15,7 +15,8 @@ export default function NotificationDropdown({ isOpen, onClose, onNotificationUp
     const fetchNotifications = async () => {
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:5000/api/notifications', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const res = await fetch(`${apiUrl}/notifications`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
@@ -29,7 +30,8 @@ export default function NotificationDropdown({ isOpen, onClose, onNotificationUp
 
     const markAsRead = async (notificationId) => {
         try {
-            await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            await fetch(`${apiUrl}/notifications/${notificationId}/read`, {
                 method: 'PUT',
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -52,7 +54,8 @@ export default function NotificationDropdown({ isOpen, onClose, onNotificationUp
 
     const deleteNotification = async (notificationId) => {
         try {
-            await fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            await fetch(`${apiUrl}/notifications/${notificationId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -69,7 +72,8 @@ export default function NotificationDropdown({ isOpen, onClose, onNotificationUp
 
     const handleInvitationResponse = async (notificationId, action) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/projects/invitation/${notificationId}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const res = await fetch(`${apiUrl}/projects/invitation/${notificationId}`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
