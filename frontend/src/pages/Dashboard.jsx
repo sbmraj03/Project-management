@@ -1,30 +1,20 @@
 import { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { fetchProjects, createProject } from "../utils/api";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import LoadingSpinner from "../components/LoadingSpinner";
+import SkeletonLoader from "../components/SkeletonLoader";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Dashboard() {
     const { user, token } = useContext(AuthContext);
-    const [projects, setProjects] = useState([]);
     const [dashboardData, setDashboardData] = useState(null);
-    const [newProject, setNewProject] = useState({
-        title: "",
-        description: "",
-        deadline: "",
-    });
 
     useEffect(() => {
         async function loadDashboardData() {
             try {
-                // Load projects
-                const projectsData = await fetchProjects(token);
-                setProjects(projectsData);
-
-                // Load dashboard data (projects, tasks, status counts)
+                // Load dashboard data (tasks, status counts)
                 const response = await fetch('http://localhost:5000/api/projects/dashboard', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -40,7 +30,6 @@ export default function Dashboard() {
                 console.error('Error loading dashboard data:', error);
                 // Set empty data structure to prevent blank screen
                 setDashboardData({
-                    projects: [],
                     tasks: [],
                     statusCounts: { ToDo: 0, InProgress: 0, Done: 0 }
                 });
@@ -52,25 +41,43 @@ export default function Dashboard() {
         }
     }, [token]);
 
-    const handleCreate = async (e) => {
-        e.preventDefault();
-        const data = await createProject(token, newProject);
-        if (data._id) {
-            setProjects([...projects, data]);
-            setNewProject({ title: "", description: "", deadline: "" });
-            // Reload dashboard data to include new project
-            window.location.reload();
-        } else {
-            alert(data.message || "Error creating project");
-        }
-    };
 
     if (!token) {
         return <div className="p-6">Please log in to view the dashboard.</div>;
     }
 
     if (!dashboardData) {
-        return <div className="p-6">Loading dashboard...</div>;
+        return (
+            <div className="p-8 pr-12 pb-12">
+                <div className="mb-8 mr-4">
+                    <h1 className="text-3xl font-bold mb-3">Dashboard</h1>
+                    <p className="text-lg text-gray-600">
+                        Welcome, <span className="font-semibold text-gray-800">{user?.name}</span>
+                    </p>
+                </div>
+                
+                {/* Loading Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 mr-4">
+                    <SkeletonLoader type="stats" count={4} />
+                </div>
+                
+                {/* Loading Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mr-4">
+                    <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                        <div className="h-8 bg-gray-200 rounded w-48 mb-6 animate-pulse"></div>
+                        <div className="space-y-4">
+                            <SkeletonLoader type="task" count={3} />
+                        </div>
+                    </div>
+                    <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                        <div className="h-8 bg-gray-200 rounded w-48 mb-6 animate-pulse"></div>
+                        <div className="flex justify-center">
+                            <div className="w-72 h-72 bg-gray-200 rounded-full animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     // Chart data
@@ -100,118 +107,113 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-            <p className="mb-6">Welcome, <span className="font-semibold">{user?.name}</span></p>
-
-            {/* Create Project Form */}
-            <form
-                onSubmit={handleCreate}
-                className="bg-white shadow p-4 rounded-lg mb-6 w-full max-w-md"
-            >
-                <h2 className="text-lg font-semibold mb-2">Create New Project</h2>
-                <input
-                    className="border p-2 w-full mb-2"
-                    placeholder="Title"
-                    value={newProject.title}
-                    onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                />
-                <textarea
-                    className="border p-2 w-full mb-2"
-                    placeholder="Description"
-                    value={newProject.description}
-                    onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                />
-                <input
-                    type="date"
-                    className="border p-2 w-full mb-2"
-                    value={newProject.deadline}
-                    onChange={(e) => setNewProject({ ...newProject, deadline: e.target.value })}
-                />
-                <button className="bg-blue-500 text-white px-4 py-2 rounded w-full">
-                    Create Project
-                </button>
-            </form>
-
-            {/* Dashboard Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Projects Section */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-xl font-semibold mb-4">My Projects</h2>
-                    <div className="space-y-2">
-                        {dashboardData.projects.map((project) => (
-                            <div key={project._id} className="border rounded p-3 hover:bg-gray-50">
-                                <Link 
-                                    to={`/projects/${project._id}`}
-                                    className="text-blue-600 hover:text-blue-800 font-medium"
-                                >
-                                    {project.title}
-                                </Link>
-                                <p className="text-sm text-gray-600 mt-1">{project.description}</p>
-                                <p className="text-xs text-gray-500">
-                                    Owner: {project.owner?.name || "Unknown"}
+        <div className="p-8 pr-12 pb-12">
+            <div className="mb-8 mr-4">
+                <h1 className="text-3xl font-bold mb-3">Dashboard</h1>
+                <p className="text-lg text-gray-600">
+                    Welcome, <span className="font-semibold text-gray-800">{user?.name}</span>
                                 </p>
                             </div>
-                        ))}
-                        {dashboardData.projects.length === 0 && (
-                            <p className="text-gray-500">No projects yet. Create one above!</p>
-                        )}
+
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 mr-4">
+                <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <div className="flex items-center">
+                        <div className="p-4 rounded-full bg-red-100">
+                            <div className="w-8 h-8 text-red-600 text-xl">📋</div>
+                        </div>
+                        <div className="ml-6">
+                            <p className="text-lg font-medium text-gray-500">To Do</p>
+                            <p className="text-3xl font-bold text-gray-900">{dashboardData.statusCounts.ToDo}</p>
+                        </div>
                     </div>
                 </div>
+                <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <div className="flex items-center">
+                        <div className="p-4 rounded-full bg-blue-100">
+                            <div className="w-8 h-8 text-blue-600 text-xl">⚡</div>
+                        </div>
+                        <div className="ml-6">
+                            <p className="text-lg font-medium text-gray-500">In Progress</p>
+                            <p className="text-3xl font-bold text-gray-900">{dashboardData.statusCounts.InProgress}</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <div className="flex items-center">
+                        <div className="p-4 rounded-full bg-green-100">
+                            <div className="w-8 h-8 text-green-600 text-xl">✅</div>
+                        </div>
+                        <div className="ml-6">
+                            <p className="text-lg font-medium text-gray-500">Completed</p>
+                            <p className="text-3xl font-bold text-gray-900">{dashboardData.statusCounts.Done}</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <div className="flex items-center">
+                        <div className="p-4 rounded-full bg-purple-100">
+                            <div className="w-8 h-8 text-purple-600 text-xl">📁</div>
+                        </div>
+                        <div className="ml-6">
+                            <p className="text-lg font-medium text-gray-500">Total Projects</p>
+                            <p className="text-3xl font-bold text-gray-900">{dashboardData.projects?.length || 0}</p>
+                        </div>
+                    </div>
+                </div>
+            </div> {/* ✅ Closed the stats overview grid here */}
 
+            {/* Dashboard Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mr-4">
                 {/* Pending Tasks Section */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-xl font-semibold mb-4">Pending Tasks</h2>
-                    <div className="space-y-2">
+                <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <h2 className="text-2xl font-semibold mb-6 text-gray-800">Recent Pending Tasks</h2>
+                    <div className="space-y-4">
                         {dashboardData.tasks
                             .filter((task) => task.status !== "Done")
                             .slice(0, 5)
                             .map((task) => (
-                                <div key={task._id} className="border rounded p-3">
+                                <div
+                                    key={task._id}
+                                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300"
+                                >
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <p className="font-medium">{task.title}</p>
-                                            <p className="text-sm text-gray-600">
+                                            <p className="font-semibold text-lg">{task.title}</p>
+                                            <p className="text-sm text-gray-600 mt-1">
                                                 Project: {task.project?.title || "Unknown"}
                                             </p>
                                         </div>
-                                        <span className={`px-2 py-1 rounded text-xs ${
-                                            task.status === "ToDo" ? "bg-red-100 text-red-800" :
-                                            task.status === "InProgress" ? "bg-blue-100 text-blue-800" :
-                                            "bg-green-100 text-green-800"
-                                        }`}>
+                                        <span
+                                            className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                                task.status === "ToDo"
+                                                    ? "bg-red-100 text-red-800"
+                                                    : task.status === "InProgress"
+                                                    ? "bg-blue-100 text-blue-800"
+                                                    : "bg-green-100 text-green-800"
+                                            }`}
+                                        >
                                             {task.status}
                                         </span>
                                     </div>
                                 </div>
                             ))}
                         {dashboardData.tasks.filter((task) => task.status !== "Done").length === 0 && (
-                            <p className="text-gray-500">No pending tasks!</p>
+                            <div className="text-center py-8">
+                                <p className="text-gray-500 text-lg">No pending tasks!</p>
+                                <p className="text-gray-400">Great job!</p>
+                            </div>
                         )}
-                    </div>
                 </div>
             </div>
 
             {/* Chart Section */}
-            <div className="mt-6 bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">Task Status Overview</h2>
+                <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <h2 className="text-2xl font-semibold mb-6 text-gray-800">Task Status Overview</h2>
                 <div className="flex justify-center">
-                    <div className="w-64 h-64">
+                        <div className="w-72 h-72">
                         <Pie data={chartData} options={chartOptions} />
                     </div>
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-                    <div className="bg-red-50 p-3 rounded">
-                        <div className="text-2xl font-bold text-red-600">{dashboardData.statusCounts.ToDo}</div>
-                        <div className="text-sm text-red-800">ToDo</div>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded">
-                        <div className="text-2xl font-bold text-blue-600">{dashboardData.statusCounts.InProgress}</div>
-                        <div className="text-sm text-blue-800">In Progress</div>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded">
-                        <div className="text-2xl font-bold text-green-600">{dashboardData.statusCounts.Done}</div>
-                        <div className="text-sm text-green-800">Done</div>
                     </div>
                 </div>
             </div>

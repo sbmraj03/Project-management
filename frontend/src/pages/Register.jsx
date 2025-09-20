@@ -1,9 +1,11 @@
 import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { registerUser } from "../utils/api";
 
 export default function Register() {
   const { setToken, setUser } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
 
   const handleChange = (e) =>
@@ -15,43 +17,50 @@ export default function Register() {
     if (data.token) {
       setToken(data.token);
       setUser(data.user);
+      // Redirect to dashboard after successful registration
+      navigate('/dashboard');
     } else {
       alert(data.message || "Error registering");
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center h-screen p-8">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-md w-96"
+        className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-100"
       >
-        <h2 className="text-2xl font-bold mb-4">Register</h2>
-        <input
-          className="border p-2 w-full mb-2"
-          placeholder="Name"
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-        />
-        <input
-          className="border p-2 w-full mb-2"
-          placeholder="Email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-        />
-        <input
-          className="border p-2 w-full mb-4"
-          type="password"
-          placeholder="Password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-        />
+        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Register</h2>
+        <div className="space-y-4">
+          <input
+            className="border border-gray-300 p-4 w-full rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter your name"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+          <input
+            className="border border-gray-300 p-4 w-full rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter your email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            className="border border-gray-300 p-4 w-full rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            type="password"
+            placeholder="Enter your password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-4 rounded-lg w-full font-medium text-lg transition-colors shadow-md hover:shadow-lg mt-6"
         >
           Register
         </button>

@@ -1,5 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import LoadingSpinner from "../components/LoadingSpinner";
+import SkeletonLoader from "../components/SkeletonLoader";
 
 export default function Search() {
   const { token } = useContext(AuthContext);
@@ -8,9 +10,12 @@ export default function Search() {
     status: "",
     priority: "",
   });
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const fetchTasks = async () => {
     if (!token) {
@@ -20,6 +25,7 @@ export default function Search() {
 
     setLoading(true);
     setError(null);
+    setHasSearched(true);
     
     try {
       const params = new URLSearchParams();
@@ -27,6 +33,8 @@ export default function Search() {
       if (filters.q) params.append('q', filters.q);
       if (filters.status) params.append('status', filters.status);
       if (filters.priority) params.append('priority', filters.priority);
+      params.append('sortBy', sortBy);
+      params.append('sortOrder', sortOrder);
       
       const url = `http://localhost:5000/api/tasks/search?${params}`;
       console.log('Search URL:', url);
@@ -74,168 +82,198 @@ export default function Search() {
 
   if (!token) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Search Tasks</h1>
-        <p className="text-gray-600">Please log in to search tasks.</p>
+      <div className="p-8 pr-12 pb-12">
+        <div className="mb-8 mr-4">
+          <h1 className="text-3xl font-bold mb-3">Search Tasks</h1>
+          <p className="text-lg text-gray-600">Please log in to search tasks.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Search Tasks</h1>
-
-      {/* Test Connection */}
-      <div className="mb-4">
-        <button 
-          onClick={async () => {
-            try {
-              const response = await fetch('http://localhost:5000/api/projects', {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-              console.log('Test API response:', response.status);
-              if (response.ok) {
-                const data = await response.json();
-                console.log('Projects found:', data.length);
-                alert(`API working! Found ${data.length} projects.`);
-              } else {
-                alert(`API error: ${response.status}`);
-              }
-            } catch (error) {
-              console.error('Test API error:', error);
-              alert('API connection failed: ' + error.message);
-            }
-          }}
-          className="bg-green-600 text-white px-4 py-2 rounded mr-2"
-        >
-          Test Projects API
-        </button>
-        
-        <button 
-          onClick={async () => {
-            try {
-              console.log('Testing search API...');
-              const response = await fetch('http://localhost:5000/api/tasks/search?q=book', {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-              console.log('Search API response:', response.status);
-              if (response.ok) {
-                const data = await response.json();
-                console.log('Search results:', data);
-                alert(`Search API working! Found ${data.length} tasks.`);
-              } else {
-                const errorText = await response.text();
-                console.error('Search API error:', response.status, errorText);
-                alert(`Search API error: ${response.status} - ${errorText}`);
-              }
-            } catch (error) {
-              console.error('Search API error:', error);
-              alert('Search API failed: ' + error.message);
-            }
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded mr-2"
-        >
-          Test Search API
-        </button>
+    <div className="p-8 pr-12 pb-12">
+      <div className="mb-8 mr-4">
+        <h1 className="text-3xl font-bold mb-3">Search Tasks</h1>
       </div>
 
+
       {/* Filters */}
-      <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
-        <input
-          type="text"
-          name="q"
-          placeholder="Search keyword..."
-          value={filters.q}
-          onChange={handleChange}
-          className="border rounded p-2 flex-1"
-        />
-        <select
-          name="status"
-          value={filters.status}
-          onChange={handleChange}
-          className="border rounded p-2"
-        >
-          <option value="">All Status</option>
-          <option value="ToDo">ToDo</option>
-          <option value="InProgress">In Progress</option>
-          <option value="Done">Done</option>
-        </select>
-        <select
-          name="priority"
-          value={filters.priority}
-          onChange={handleChange}
-          className="border rounded p-2"
-        >
-          <option value="">All Priority</option>
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
-        <button 
-          type="submit"
-          disabled={loading}
-          className="bg-blue-600 text-white px-4 rounded disabled:opacity-50"
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
-      </form>
+      <div className="bg-white shadow-lg rounded-xl p-8 mb-8 mr-4 border border-gray-100">
+        <h2 className="text-xl font-semibold mb-6 text-gray-800">Search Filters</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input
+              type="text"
+              name="q"
+              placeholder="Search keyword..."
+              value={filters.q}
+              onChange={handleChange}
+              className="border border-gray-300 p-4 rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <select
+              name="status"
+              value={filters.status}
+              onChange={handleChange}
+              className="border border-gray-300 p-4 rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Status</option>
+              <option value="ToDo">ToDo</option>
+              <option value="InProgress">In Progress</option>
+              <option value="Done">Done</option>
+            </select>
+            <select
+              name="priority"
+              value={filters.priority}
+              onChange={handleChange}
+              className="border border-gray-300 p-4 rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Priority</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+            <button 
+              type="submit"
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-medium text-lg transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Searching..." : "Search"}
+            </button>
+          </div>
+        </form>
+        
+        {/* Sorting Controls */}
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <h3 className="text-lg font-medium text-gray-700 mb-4">Sort Results</h3>
+          <div className="flex gap-4 items-center">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="createdAt">Created Date</option>
+              <option value="title">Title</option>
+              <option value="status">Status</option>
+              <option value="priority">Priority</option>
+              <option value="dueDate">Due Date</option>
+            </select>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="desc">Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
+            <button
+              onClick={fetchTasks}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+            >
+              Apply Sort
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
+        <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg mb-8 mr-4">
+          <p className="font-medium">{error}</p>
         </div>
       )}
 
       {/* Loading State */}
       {loading && (
-        <div className="text-center py-4">
-          <p className="text-gray-600">Searching tasks...</p>
+        <div className="mr-4">
+          <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+            <div className="flex items-center justify-center mb-6">
+              <div className="relative">
+                {/* Outer ring */}
+                <div className="w-12 h-12 border-4 border-gray-200 rounded-full animate-spin">
+                  <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+                
+                {/* Inner ring */}
+                <div className="absolute top-1 left-1 w-10 h-10 border-4 border-gray-100 rounded-full">
+                  <div className="w-full h-full border-4 border-transparent border-t-blue-300 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+                </div>
+                
+                {/* Center dot */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            <p className="text-center text-gray-600 font-medium animate-pulse">Searching tasks...</p>
+          </div>
         </div>
       )}
 
       {/* Results */}
-      {!loading && !error && (
-        <div>
-          <h2 className="text-lg font-semibold mb-2">
-            Results ({tasks.length} tasks found)
-          </h2>
-          {tasks.length === 0 ? (
-            <p className="text-gray-600">No tasks found matching your criteria.</p>
-          ) : (
-            <ul className="space-y-2">
-              {tasks.map((t) => (
-                <li key={t._id} className="border p-3 rounded hover:bg-gray-50">
-                  <h3 className="font-semibold text-lg">{t.title}</h3>
-                  {t.description && (
-                    <p className="text-sm text-gray-600 mt-1">{t.description}</p>
-                  )}
-                  <div className="flex gap-4 mt-2 text-sm">
-                    <span className="text-gray-600">
-                      Project: <span className="font-medium">{t.project?.title || "Unknown"}</span>
-                    </span>
-                    <span className="text-gray-600">
-                      Assignee: <span className="font-medium">{t.assignee?.name || "Unassigned"}</span>
-                    </span>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      t.status === "ToDo" ? "bg-red-100 text-red-800" :
-                      t.status === "InProgress" ? "bg-blue-100 text-blue-800" :
-                      "bg-green-100 text-green-800"
-                    }`}>
-                      {t.status}
-                    </span>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      t.priority === "High" ? "bg-red-100 text-red-800" :
-                      t.priority === "Medium" ? "bg-yellow-100 text-yellow-800" :
-                      "bg-green-100 text-green-800"
-                    }`}>
-                      {t.priority || "No Priority"}
-                    </span>
+      {!loading && !error && hasSearched && (
+        <div className="mr-4">
+          <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+            <h2 className="text-2xl font-semibold mb-6 text-gray-800">
+              Search Results ({tasks.length} tasks found)
+            </h2>
+            {tasks.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600 text-lg">No tasks found matching your criteria.</p>
+                <p className="text-gray-400 mt-2">Try adjusting your search filters.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {tasks.map((t) => (
+                  <div key={t._id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-200 hover:border-blue-300">
+                    <h3 className="font-bold text-xl mb-3 text-gray-800">{t.title}</h3>
+                    {t.description && (
+                      <p className="text-gray-600 mb-4 leading-relaxed">{t.description}</p>
+                    )}
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-700">Project:</span>
+                        <span className="text-gray-600">{t.project?.title || "Unknown"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-700">Assignee:</span>
+                        <span className="text-gray-600">{t.assignee?.name || "Unassigned"}</span>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        t.status === "ToDo" ? "bg-red-100 text-red-800" :
+                        t.status === "InProgress" ? "bg-blue-100 text-blue-800" :
+                        "bg-green-100 text-green-800"
+                      }`}>
+                        {t.status}
+                      </span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        t.priority === "High" ? "bg-red-100 text-red-800" :
+                        t.priority === "Medium" ? "bg-yellow-100 text-yellow-800" :
+                        "bg-green-100 text-green-800"
+                      }`}>
+                        {t.priority || "No Priority"}
+                      </span>
+                    </div>
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Initial State - Show when no search has been performed */}
+      {!loading && !error && !hasSearched && (
+        <div className="mr-4">
+          <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+            <div className="text-center py-12">
+              <div className="mb-6">
+                <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">Search Tasks</h3>
+              <p className="text-gray-500">Use the search filters above to find tasks across your projects.</p>
+            </div>
+          </div>
         </div>
       )}
     </div>

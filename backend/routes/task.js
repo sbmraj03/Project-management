@@ -1,6 +1,7 @@
 import express from "express";
 import Task from "../models/Task.js";
 import Project from "../models/Project.js";
+import Notification from "../models/Notification.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -25,9 +26,38 @@ router.post("/", protect, async (req, res) => {
       dueDate,
     });
 
+    // Create notifications for all project members
+    const projectMembers = [project.owner, ...project.members];
+    const notifications = [];
+    
+    for (const memberId of projectMembers) {
+      if (memberId.toString() !== req.user.id) { // Don't notify the creator
+        const notification = await Notification.create({
+          recipient: memberId,
+          sender: req.user.id,
+          project: projectId,
+          type: "task_assigned",
+          title: "New Task Created",
+          message: `A new task "${title}" has been created in project "${project.title}"`,
+          actionRequired: false
+        });
+        notifications.push(notification);
+      }
+    }
+
     // Emit real-time update
     const io = req.app.get("io");
     io.to(projectId).emit("taskCreated", task);
+    
+    // Emit notifications to all project members
+    for (const memberId of projectMembers) {
+      if (memberId.toString() !== req.user.id) {
+        io.to(memberId.toString()).emit('notification', {
+          type: 'task_created',
+          message: `New task "${title}" created in project "${project.title}"`
+        });
+      }
+    }
 
     res.json(task);
 } catch (err) {
@@ -38,8 +68,8 @@ router.post("/", protect, async (req, res) => {
 // Search Tasks
 router.get("/search", protect, async (req, res) => {
   try {
-    const { q, status, priority } = req.query;
-    console.log('Search request:', { q, status, priority, userId: req.user.id });
+    const { q, status, priority, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+    console.log('Search request:', { q, status, priority, sortBy, sortOrder, userId: req.user.id });
     
     // Build search query
     let query = {};
@@ -72,9 +102,14 @@ router.get("/search", protect, async (req, res) => {
     
     console.log('Final query:', query);
     
+    // Build sort object
+    const sortObj = {};
+    sortObj[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    
     const tasks = await Task.find(query)
       .populate("assignee", "name email")
-      .populate("project", "title");
+      .populate("project", "title")
+      .sort(sortObj);
     
     console.log('Found tasks:', tasks.length);
     res.json(tasks);
@@ -106,15 +141,56 @@ router.put("/:id", protect, async (req, res) => {
     const task = await Task.findById(req.params.id).populate("project");
     if (!task) return res.status(404).json({ message: "Not found" });
 
+    // Check if user is project member
     if (!task.project.members.includes(req.user.id))
       return res.status(403).json({ message: "Not authorized" });
 
+    // Check if user can update task (assignee or project owner)
+    const canUpdate = (
+      task.assignee?.toString() === req.user.id || 
+      task.project.owner?.toString() === req.user.id
+    );
+    
+    if (!canUpdate) {
+      return res.status(403).json({ 
+        message: "Only the assignee or project owner can update this task" 
+      });
+    }
+
+    const oldTask = { ...task.toObject() };
     Object.assign(task, req.body);
     await task.save();
+    
+    // Create notifications for all project members about task update
+    const projectMembers = [task.project.owner, ...task.project.members];
+    
+    for (const memberId of projectMembers) {
+      if (memberId.toString() !== req.user.id) { // Don't notify the updater
+        await Notification.create({
+          recipient: memberId,
+          sender: req.user.id,
+          project: task.project._id,
+          type: "status_update",
+          title: "Task Updated",
+          message: `Task "${task.title}" has been updated in project "${task.project.title}"`,
+          actionRequired: false
+        });
+      }
+    }
     
     // Emit real-time update
     const io = req.app.get("io");
     io.to(task.project._id.toString()).emit("taskUpdated", task);
+    
+    // Emit notifications to all project members
+    for (const memberId of projectMembers) {
+      if (memberId.toString() !== req.user.id) {
+        io.to(memberId.toString()).emit('notification', {
+          type: 'task_updated',
+          message: `Task "${task.title}" updated in project "${task.project.title}"`
+        });
+      }
+    }
 
     res.json(task);
   } catch (err) {
@@ -128,15 +204,58 @@ router.delete("/:id", protect, async (req, res) => {
     const task = await Task.findById(req.params.id).populate("project");
     if (!task) return res.status(404).json({ message: "Not found" });
 
+    // Check if user is project member
     if (!task.project.members.includes(req.user.id))
       return res.status(403).json({ message: "Not authorized" });
 
+    // Check if user can delete task (assignee or project owner)
+    const canDelete = (
+      task.assignee?.toString() === req.user.id || 
+      task.project.owner?.toString() === req.user.id
+    );
+    
+    if (!canDelete) {
+      return res.status(403).json({ 
+        message: "Only the assignee or project owner can delete this task" 
+      });
+    }
+
     const projectId = task.project._id.toString();
+    const projectTitle = task.project.title;
+    const taskTitle = task.title;
+    
+    // Create notifications for all project members about task deletion
+    const projectMembers = [task.project.owner, ...task.project.members];
+    
+    for (const memberId of projectMembers) {
+      if (memberId.toString() !== req.user.id) { // Don't notify the deleter
+        await Notification.create({
+          recipient: memberId,
+          sender: req.user.id,
+          project: task.project._id,
+          type: "status_update",
+          title: "Task Deleted",
+          message: `Task "${taskTitle}" has been deleted from project "${projectTitle}"`,
+          actionRequired: false
+        });
+      }
+    }
+    
     await task.deleteOne();
     
     // Emit real-time update
     const io = req.app.get("io");
     io.to(projectId).emit("taskDeleted", { taskId: req.params.id });
+    
+    // Emit notifications to all project members
+    for (const memberId of projectMembers) {
+      if (memberId.toString() !== req.user.id) {
+        io.to(memberId.toString()).emit('notification', {
+          type: 'task_deleted',
+          message: `Task "${taskTitle}" deleted from project "${projectTitle}"`
+        });
+      }
+    }
 
     res.json({ message: "Deleted" });
   } catch (err) {
