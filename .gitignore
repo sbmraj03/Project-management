@@ -98,12 +98,7 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-# Docker
-.dockerignore
-
-# Deployment
-deploy.sh
-deploy.bat
+# Deployment scripts (not needed for cloud deployment)
 
 # Backup files
 *.backup

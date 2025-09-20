@@ -106,8 +106,7 @@ sessions/
 # PM2 process file
 ecosystem.config.js
 
-# Docker
-.dockerignore
+# Docker (not needed for cloud deployment)
 
 # Backup files
 *.backup

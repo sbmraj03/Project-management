@@ -1,12 +1,13 @@
-# Project Management App - Deployment Guide
+# Project Management App - Cloud Deployment Guide
 
-This guide covers different deployment options for the Project Management App.
+This guide covers cloud deployment options for the Project Management App using Vercel (frontend) and Render (backend).
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
-- Node.js 18+ (for local development)
-- MongoDB (for local development)
+- GitHub account with your project repository
+- Vercel account (free)
+- Render account (free)
+- MongoDB Atlas account (free)
 
 ## Environment Variables
 
