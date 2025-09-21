@@ -7,7 +7,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import SkeletonLoader from "../components/SkeletonLoader";
 
 export default function Projects() {
-    const { user, token } = useContext(AuthContext);
+    const { user, token, loading: authLoading } = useContext(AuthContext);
     const { showSuccess, showError } = useToast();
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -33,10 +33,10 @@ export default function Projects() {
             }
         }
         
-        if (token) {
+        if (token && user && !authLoading) {
             loadProjects();
         }
-    }, [token]);
+    }, [token, user, authLoading]);
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -128,12 +128,38 @@ export default function Projects() {
         }
     };
 
-    // Separate owned and invited projects
-    const ownedProjects = projects.filter(project => project.owner?._id === user?._id);
-    const invitedProjects = projects.filter(project => project.owner?._id !== user?._id);
+    // Separate owned and invited projects with proper comparison
+    const ownedProjects = projects.filter(project => {
+        // Ensure we have both project owner and user data before comparison
+        if (!project.owner || !user) return false;
+        return project.owner._id === user._id;
+    });
+    const invitedProjects = projects.filter(project => {
+        // Ensure we have both project owner and user data before comparison
+        if (!project.owner || !user) return false;
+        return project.owner._id !== user._id;
+    });
 
     if (!token) {
         return <div className="p-6">Please log in to view projects.</div>;
+    }
+
+    if (authLoading) {
+        return (
+            <div className="p-8 pr-12 pb-12">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 mr-4 gap-4">
+                    <div className="pr-4">
+                        <div className="h-8 bg-gray-200 rounded w-48 mb-3 animate-pulse"></div>
+                        <div className="h-6 bg-gray-200 rounded w-64 animate-pulse"></div>
+                    </div>
+                    <div className="h-12 bg-gray-200 rounded w-40 animate-pulse"></div>
+                </div>
+                <div className="text-center py-12">
+                    <LoadingSpinner />
+                    <p className="text-gray-500 text-lg mt-4">Loading user data...</p>
+                </div>
+            </div>
+        );
     }
 
     if (loading) {

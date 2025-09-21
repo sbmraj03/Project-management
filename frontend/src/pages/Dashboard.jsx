@@ -8,7 +8,7 @@ import SkeletonLoader from "../components/SkeletonLoader";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Dashboard() {
-    const { user, token } = useContext(AuthContext);
+    const { user, token, loading: authLoading } = useContext(AuthContext);
     const [dashboardData, setDashboardData] = useState(null);
 
     useEffect(() => {
@@ -37,10 +37,10 @@ export default function Dashboard() {
             }
         }
         
-        if (token) {
+        if (token && !authLoading) {
             loadDashboardData();
         }
-    }, [token]);
+    }, [token, authLoading]);
 
 
     if (!token) {

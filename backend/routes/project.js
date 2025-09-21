@@ -36,30 +36,6 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// Dashboard overview
-router.get("/dashboard", protect , async (req, res) => {
-    try {
-      // Get user's projects (owner or invited)
-      const projects = await Project.find({
-        $or: [{ owner: req.user._id }, { members: req.user._id }],
-      }).populate("owner", "name email");
-  
-      // Get tasks across those projects
-      const projectIds = projects.map((p) => p._id);
-      const tasks = await Task.find({ project: { $in: projectIds } });
-  
-      // Count tasks by status
-      const statusCounts = {
-        ToDo: tasks.filter((t) => t.status === "ToDo").length,
-        InProgress: tasks.filter((t) => t.status === "InProgress").length,
-        Done: tasks.filter((t) => t.status === "Done").length,
-      };
-  
-      res.json({ projects, tasks, statusCounts });
-    } catch (err) {
-      res.status(500).json({ error: "Server error" });
-    }
-  });
 
   
 // Update Project (owner only)
@@ -88,6 +64,37 @@ router.delete("/:id", protect, async (req, res) => {
 
     await project.deleteOne();
     res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Dashboard Data (must come before /:id route)
+router.get("/dashboard", protect, async (req, res) => {
+  try {
+    // Get user's projects (consistent with main projects endpoint)
+    const projects = await Project.find({
+      members: req.user.id
+    }).populate("owner", "name email");
+
+    // Get all tasks from user's projects
+    const projectIds = projects.map(p => p._id);
+    const tasks = await Task.find({
+      project: { $in: projectIds }
+    }).populate("project", "title");
+
+    // Count tasks by status
+    const statusCounts = {
+      ToDo: tasks.filter(t => t.status === "ToDo").length,
+      InProgress: tasks.filter(t => t.status === "InProgress").length,
+      Done: tasks.filter(t => t.status === "Done").length,
+    };
+
+    res.json({
+      projects,
+      tasks,
+      statusCounts
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -207,37 +214,6 @@ router.post("/invitation/:notificationId", protect, async (req, res) => {
     } else {
       return res.status(400).json({ message: "Invalid action" });
     }
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Dashboard Data
-router.get("/dashboard", protect, async (req, res) => {
-  try {
-    // Get user's projects
-    const projects = await Project.find({
-      members: req.user.id
-    }).populate("owner", "name email");
-
-    // Get all tasks from user's projects
-    const projectIds = projects.map(p => p._id);
-    const tasks = await Task.find({
-      project: { $in: projectIds }
-    }).populate("project", "title");
-
-    // Count tasks by status
-    const statusCounts = {
-      ToDo: tasks.filter(t => t.status === "ToDo").length,
-      InProgress: tasks.filter(t => t.status === "InProgress").length,
-      Done: tasks.filter(t => t.status === "Done").length,
-    };
-
-    res.json({
-      projects,
-      tasks,
-      statusCounts
-    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

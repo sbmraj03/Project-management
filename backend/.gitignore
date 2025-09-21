@@ -1,59 +1,126 @@
-# Backend .gitignore
+# Backend (Node.js + Express) .gitignore
 
-# Environment variables
+# ================================
+# Environment Variables
+# ================================
 .env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Logs
-logs
-*.log
+# ================================
+# Dependencies
+# ================================
+node_modules/
+.pnp
+.pnp.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
+# ================================
+# Build Outputs
+# ================================
+dist/
+build/
+out/
 
-# Runtime data
-pids
+# ================================
+# Development & Testing
+# ================================
+coverage/
+*.lcov
+.nyc_output
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# ================================
+# Cache & Temporary Files
+# ================================
+.cache/
+.parcel-cache/
+.tmp/
+temp/
+tmp/
+.npm/
+.yarn-integrity
+*.tgz
+
+# ================================
+# Editor & IDE
+# ================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+
+# ================================
+# Operating System
+# ================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ================================
+# Database & Storage
+# ================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ================================
+# Logs & Runtime
+# ================================
+logs/
+*.log
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output
-
-# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
-.grunt
-
-# Bower dependency directory (https://bower.io/)
-bower_components
-
-# node_modules
-node_modules/
-
+# ================================
+# Node.js Specific
+# ================================
 # Optional npm cache directory
 .npm
-
-# Optional eslint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
 
 # Optional REPL history
 .node_repl_history
@@ -64,64 +131,63 @@ node_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# Temporary folders
-tmp/
-temp/
-
-# Editor directories and files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
+# ================================
+# Express.js Specific
+# ================================
+# Session store
+sessions/
 
 # Uploads directory (if you have file uploads)
 uploads/
 public/uploads/
 
-# Session store
-sessions/
-
-# Local development
-.local/
-
+# ================================
+# Process Management
+# ================================
 # PM2 process file
 ecosystem.config.js
+.pm2/
 
-# Docker (not needed for cloud deployment)
+# ================================
+# Docker (if used)
+# ================================
+Dockerfile
+docker-compose.yml
+docker-compose.yaml
+.dockerignore
 
+# ================================
 # Backup files
+# ================================
 *.backup
 *.bak
 *.tmp
 
-# Test coverage
-coverage/
+# ================================
+# Local development
+# ================================
+.local/
 
-# Build outputs (if any)
-build/
-out/
-
+# ================================
 # TypeScript
+# ================================
 *.tsbuildinfo
 
-# Optional stylelint cache
-.stylelintcache
+# ================================
+# Security & Secrets
+# ================================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# ================================
+# Deployment & Cloud
+# ================================
+.vercel/
+.netlify/
+.aws/
+.serverless/
