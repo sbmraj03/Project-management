@@ -1,3 +1,8 @@
+/**
+ * SKELETON LOADER COMPONENT
+ * Displays loading placeholders for different content types
+ * Features: Card, stats, task skeletons with animations
+ */
 import React from 'react';
 
 export default function SkeletonLoader({ type = 'card', count = 1 }) {

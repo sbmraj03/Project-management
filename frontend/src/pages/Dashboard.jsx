@@ -7,6 +7,14 @@ import SkeletonLoader from "../components/SkeletonLoader";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+/**
+ * Dashboard component - displays project and task statistics
+ * Features:
+ * - Task status overview with pie chart
+ * - Recent pending tasks list
+ * - Project count statistics
+ * - Real-time data loading with error handling
+ */
 export default function Dashboard() {
     const { user, token, loading: authLoading } = useContext(AuthContext);
     const [dashboardData, setDashboardData] = useState(null);

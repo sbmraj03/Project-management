@@ -7,6 +7,12 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+/**
+ * PROJECT ROUTES
+ * Handles CRUD operations for projects
+ * Features: Create, read, update, delete, invite members
+ */
+
 // Create Project
 router.post("/", protect, async (req, res) => {
   try {
@@ -18,6 +24,9 @@ router.post("/", protect, async (req, res) => {
       owner: req.user.id,
       members: [req.user.id]
     });
+    
+    // Populate the owner field before sending response
+    await project.populate("owner", "name email");
     res.json(project);
   } catch (err) {
     res.status(500).json({ message: err.message });

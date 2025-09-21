@@ -1,3 +1,8 @@
+/**
+ * TOAST COMPONENT
+ * Displays temporary notifications with animations
+ * Features: Success/error states, auto-dismiss, smooth animations
+ */
 import React, { useState, useEffect } from 'react';
 
 const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {

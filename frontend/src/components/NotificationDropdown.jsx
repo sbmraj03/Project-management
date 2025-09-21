@@ -1,3 +1,8 @@
+/**
+ * NOTIFICATION DROPDOWN COMPONENT
+ * Displays real-time notifications with Socket.IO integration
+ * Features: Real-time updates, invitation handling, responsive design
+ */
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 

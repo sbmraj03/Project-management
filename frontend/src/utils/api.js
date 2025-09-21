@@ -1,3 +1,8 @@
+/**
+ * API UTILITIES
+ * Centralized API calls for authentication and project management
+ * Features: User auth, project CRUD, error handling
+ */
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export const registerUser = async (name, email, password) => {

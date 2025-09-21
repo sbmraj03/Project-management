@@ -1,3 +1,8 @@
+/**
+ * PROJECT MODEL
+ * Defines project schema with owner, members, and timestamps
+ * Features: Owner relationship, member management, automatic timestamps
+ */
 import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema(

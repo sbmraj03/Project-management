@@ -6,6 +6,14 @@ import { fetchProjects, createProject } from "../utils/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import SkeletonLoader from "../components/SkeletonLoader";
 
+/**
+ * Projects page component - displays user's owned and invited projects
+ * Features:
+ * - Create, edit, and delete projects
+ * - Real-time project filtering between owned/invited sections
+ * - Modal forms for project management
+ * - Responsive design with loading states
+ */
 export default function Projects() {
     const { user, token, loading: authLoading } = useContext(AuthContext);
     const { showSuccess, showError } = useToast();
@@ -44,7 +52,15 @@ export default function Projects() {
             const data = await createProject(token, newProject);
             if (data._id) {
                 showSuccess("Project created successfully!");
-                setProjects([...projects, data]);
+                
+                // Ensure the project has owner data for proper filtering
+                const projectWithOwner = {
+                    ...data,
+                    owner: data.owner || { _id: user._id, name: user.name, email: user.email }
+                };
+                
+                console.log('Created project:', projectWithOwner);
+                setProjects([...projects, projectWithOwner]);
                 setNewProject({ title: "", description: "", deadline: "" });
                 setIsModalOpen(false); // Close modal after successful creation
             } else {
@@ -132,12 +148,23 @@ export default function Projects() {
     const ownedProjects = projects.filter(project => {
         // Ensure we have both project owner and user data before comparison
         if (!project.owner || !user) return false;
-        return project.owner._id === user._id;
+        
+        // Handle both string and object ID comparisons
+        const ownerId = typeof project.owner === 'string' ? project.owner : project.owner._id;
+        const userId = typeof user === 'string' ? user : user._id;
+        
+        return ownerId === userId;
     });
+    
     const invitedProjects = projects.filter(project => {
         // Ensure we have both project owner and user data before comparison
         if (!project.owner || !user) return false;
-        return project.owner._id !== user._id;
+        
+        // Handle both string and object ID comparisons
+        const ownerId = typeof project.owner === 'string' ? project.owner : project.owner._id;
+        const userId = typeof user === 'string' ? user : user._id;
+        
+        return ownerId !== userId;
     });
 
     if (!token) {

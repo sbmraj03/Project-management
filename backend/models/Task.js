@@ -1,3 +1,8 @@
+/**
+ * TASK MODEL
+ * Defines task schema with project relationships
+ * Features: Status tracking, project association, automatic timestamps
+ */
 import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema(

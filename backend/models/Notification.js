@@ -1,3 +1,8 @@
+/**
+ * NOTIFICATION MODEL
+ * Defines notification schema for real-time updates
+ * Features: User targeting, invitation handling, read status
+ */
 import mongoose from "mongoose";
 
 const notificationSchema = new mongoose.Schema(

@@ -1,6 +1,14 @@
 import { createContext, useState, useEffect } from "react";
 import { fetchProfile } from "../utils/api";
 
+/**
+ * Authentication Context - manages user authentication state
+ * Features:
+ * - Automatic user profile loading on token availability
+ * - Token persistence in localStorage
+ * - Error handling for invalid tokens
+ * - Loading states for authentication
+ */
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {

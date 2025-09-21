@@ -1,4 +1,9 @@
 // models/User.js
+/**
+ * USER MODEL
+ * Defines user schema with authentication and security
+ * Features: Password hashing, email validation, automatic timestamps
+ */
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 

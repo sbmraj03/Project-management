@@ -1,4 +1,8 @@
-// routes/authRoutes.js
+/**
+ * AUTHENTICATION ROUTES
+ * Handles user registration, login, and profile management
+ * Features: Secure password hashing, JWT tokens, profile fetching
+ */
 import express from "express";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
